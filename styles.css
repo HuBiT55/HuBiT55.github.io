@@ -98,3 +98,12 @@ footer {
     justify-content: center;
 }
 
+.icons .icon-title {
+    display: none;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.icons a:hover .icon-title {
+    display: block;
+}
