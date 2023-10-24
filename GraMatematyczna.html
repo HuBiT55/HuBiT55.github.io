@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gra Matematyczna</title>
+    <style>
+        /* Dodaj dowolne style, jeśli są potrzebne */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #pytanie {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #odpowiedz {
+            width: 100px;
+            font-size: 16px;
+            padding: 5px;
+        }
+
+        #komunikat {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        #wynik {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #wyniki {
+            font-size: 18px;
+            text-align: left;
+        }
+
+        .poprawna {
+            color: green;
+        }
+
+        .bledna {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Gra Matematyczna</h1>
+
+<button onclick="rozpocznijGre()">Rozpocznij Grę</button>
+
+<div id="gra" style="display: none;">
+    <div id="pytanie"></div>
+    <input type="number" id="odpowiedz">
+    <button onclick="sprawdzOdpowiedz()">Sprawdź</button>
+    <div id="komunikat"></div>
+</div>
+
+<div id="koniecGry" style="display: none;">
+    <h2>Koniec gry!</h2>
+    <div id="wynik"></div>
+    <div id="wyniki"></div>
+</div>
+
+<script>
+        const iloscPytan = 5;
+        let punkty = 0;
+        let numerPytania = 1;
+        let zadania = [];
+
+        function rozpocznijGre() {
+            zadania = []; // Resetuj listę zadan
+            document.getElementById('gra').style.display = 'block';
+            generujPytanie();
+        }
+
+        function generujPytanie() {
+            const liczba1 = losowaLiczba(1, 10);
+            const liczba2 = losowaLiczba(1, 10);
+            const operacja = losowaLiczba(0, 2);
+            let znakOperacji;
+
+            switch (operacja) {
+                case 0:
+                    znakOperacji = "+";
+                    break;
+                case 1:
+                    znakOperacji = "-";
+                    break;
+                case 2:
+                    znakOperacji = "*";
+                    break;
+                default:
+                    znakOperacji = "+";
+                    break;
+            }
+
+            const pytanie = `${liczba1} ${znakOperacji} ${liczba2} = ?`;
+            const zadanie = {
+                pytanie: pytanie,
+                odpowiedz: null,
+                poprawnaOdpowiedz: obliczWynik(liczba1, znakOperacji, liczba2)
+            };
+
+            zadania.push(zadanie);
+
+            document.getElementById('pytanie').textContent = pytanie;
+        }
+
+        function sprawdzOdpowiedz() {
+            const odpowiedz = parseInt(document.getElementById('odpowiedz').value);
+            const wynik = obliczWynik(zadania[numerPytania - 1].pytanie);
+
+            zadania[numerPytania - 1].odpowiedz = odpowiedz;
+
+            if (odpowiedz === wynik) {
+                document.getElementById('komunikat').textContent = 'Gratulacje! Odpowiedź poprawna.';
+                punkty++;
+            } else {
+                document.getElementById('komunikat').textContent = 'Próbuj dalej :(';
+            }
+
+            if (numerPytania < iloscPytan) {
+                numerPytania++;
+                generujPytanie();
+                document.getElementById('odpowiedz').value = '';
+                document.getElementById('komunikat').textContent = '';
+            } else {
+                zakonczGre();
+            }
+        }
+
+        function zakonczGre() {
+            document.getElementById('gra').style.display = 'none';
+            document.getElementById('koniecGry').style.display = 'block';
+            document.getElementById('wynik').textContent = "Twój wynik: " + punkty + "/" + iloscPytan;
+
+            const wynikiElement = document.getElementById('wyniki');
+            zadania.forEach((zadanie, index) => {
+                const pytanieElement = document.createElement('div');
+                pytanieElement.textContent = `Zadanie ${index + 1}: ${zadanie.pytanie}, Twoja odpowiedź: ${zadanie.odpowiedz}, Poprawna odpowiedź: ${zadanie.poprawnaOdpowiedz}`;
+                if (zadanie.odpowiedz === zadanie.poprawnaOdpowiedz) {
+                    pytanieElement.classList.add('poprawna');
+                } else {
+                    pytanieElement.classList.add('bledna');
+                }
+                wynikiElement.appendChild(pytanieElement);
+            });
+        }
+
+        function obliczWynik(liczba1, znakOperacji, liczba2) {
+            switch (znakOperacji) {
+                case '+':
+                    return liczba1 + liczba2;
+                case '-':
+                    return liczba1 - liczba2;
+                case '*':
+                    return liczba1 * liczba2;
+                default:
+                    return 0;
+            }
+        }
+
+        function losowaLiczba(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,185 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class MemoryGame extends JFrame implements ActionListener {
+private JPanel leftPanel, rightPanel;
+private JButton restartButton, modeButton, tilesButton;
+private JLabel timerLabel;
+private ArrayList<JButton> tiles;
+    private ImageIcon questionMarkIcon;
+    private ArrayList<ImageIcon> icons;
+        private Timer timer;
+        private int seconds;
+        private JButton selectedTile;
+
+        private String[] imagePaths = {
+        "czoko.png",
+        "koparka.png",
+        "sw-mich.png",
+        "traktor.png",
+        "wydra.png"
+        };
+
+        private boolean colorMode = false;
+        private int numTiles = 16;
+        private boolean canClick = true;
+        private int pairsFound = 0;
+
+        public MemoryGame() {
+        setTitle("Memory Card Game");
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridLayout(1, 2));
+
+        leftPanel = new JPanel();
+        leftPanel.setLayout(new GridLayout(4, 1));
+
+        timerLabel = new JLabel("Time: 0 seconds");
+        restartButton = new JButton("Restart");
+        modeButton = new JButton("Mode");
+        tilesButton = new JButton("Tiles");
+
+        modeButton.addActionListener(this);
+        tilesButton.addActionListener(this);
+        restartButton.addActionListener(this);
+
+        leftPanel.add(timerLabel);
+        leftPanel.add(restartButton);
+        leftPanel.add(modeButton);
+        leftPanel.add(tilesButton);
+
+        add(leftPanel);
+
+        rightPanel = new JPanel();
+        rightPanel.setLayout(new GridLayout(4, 4));
+
+        tiles = new ArrayList<>();
+        icons = new ArrayList<>();
+        questionMarkIcon = new ImageIcon("questionmark.png");
+
+        for (int i = 0; i < 16; i++) {
+        JButton tile = new JButton(questionMarkIcon);
+        tile.addActionListener(this);
+        tiles.add(tile);
+        rightPanel.add(tile);
+        }
+
+        add(rightPanel);
+
+        seconds = 0;
+        timer = new Timer(1000, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        seconds++;
+        timerLabel.setText("Time: " + seconds + " seconds");
+        }
+        });
+        }
+
+        private void initializeIcons() {
+        for (int i = 0; i < numTiles / 2; i++) {
+        if (colorMode) {
+        icons.add(new ColorIcon(getRandomColor()));
+        } else {
+        icons.add(new ImageIcon(imagePaths[i]));
+        }
+        icons.add(new ImageIcon(imagePaths[i]));
+        }
+        Collections.shuffle(icons);
+        }
+
+        private void shuffleTiles() {
+        Collections.shuffle(tiles);
+        rightPanel.removeAll();
+        for (JButton tile : tiles) {
+        rightPanel.add(tile);
+        }
+        rightPanel.revalidate();
+        rightPanel.repaint();
+        }
+
+        private void restartGame() {
+        timer.stop();
+        seconds = 0;
+        timerLabel.setText("Time: 0 seconds");
+        pairsFound = 0;
+        canClick = true;
+        initializeIcons();
+        for (int i = 0; i < numTiles; i++) {
+        tiles.get(i).setIcon(questionMarkIcon);
+        tiles.get(i).setEnabled(true);
+        }
+        shuffleTiles();
+        }
+
+        private void handleTileClick(JButton tile) {
+        if (!canClick) return;
+        int index = tiles.indexOf(tile);
+        ImageIcon icon = icons.get(index);
+
+        if (icon != questionMarkIcon) {
+        tile.setIcon(icon);
+        tile.setEnabled(false);
+
+        if (selectedTile == null) {
+        selectedTile = tile;
+        } else {
+        if (icons.get(tiles.indexOf(selectedTile)).equals(icon)) {
+        pairsFound++;
+        if (pairsFound == numTiles / 2) {
+        JOptionPane.showMessageDialog(this, "Gratulacje! Wygrałeś!");
+        }
+        } else {
+        canClick = false;
+        Timer delayTimer = new Timer(1000, new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        selectedTile.setIcon(questionMarkIcon);
+        tile.setIcon(questionMarkIcon);
+        selectedTile.setEnabled(true);
+        tile.setEnabled(true);
+        canClick = true;
+        }
+        });
+        delayTimer.setRepeats(false);
+        delayTimer.start();
+        }
+        selectedTile = null;
+        }
+        }
+        }
+
+        private Color getRandomColor() {
+        int r = (int) (Math.random() * 256);
+        int g = (int) (Math.random() * 256);
+        int b = (int) (Math.random() * 256);
+        return new Color(r, g, b);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == restartButton) {
+        restartGame();
+        } else if (e.getSource() == modeButton) {
+        colorMode = !colorMode;
+        } else if (e.getSource() == tilesButton) {
+        // Dodaj kod obsługi wyboru ilości kafelków
+        } else {
+        JButton clickedTile = (JButton) e.getSource();
+        handleTileClick(clickedTile);
+        }
+        }
+
+        public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+        @Override
+        public void run() {
+        MemoryGame game = new MemoryGame();
+        game.setVisible(true);
+        }
+        });
+        }
+        }
